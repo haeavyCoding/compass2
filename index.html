@@ -3,18 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Digital Compass</title>
+  <title>Smart Compass | Find Your Way</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --primary: #2563eb;
-      --secondary: #dc2626;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --secondary: #ef4444;
       --text: #1e293b;
+      --text-light: #64748b;
       --bg: #f8fafc;
       --card: #ffffff;
-      --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      --card-dark: #f1f5f9;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --gradient: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
     }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -25,190 +37,441 @@
       padding: 20px;
       margin: 0;
       text-align: center;
+      line-height: 1.6;
     }
+    
     .container {
       width: 100%;
-      max-width: 320px;
+      max-width: 380px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
+      gap: 20px;
     }
+    
     header {
       margin-bottom: 10px;
+      text-align: center;
     }
+    
     h1 {
-      color: var(--primary);
-      font-size: 24px;
+      color: var(--primary-dark);
+      font-size: 28px;
       margin-bottom: 5px;
+      font-weight: 700;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
+    
     .subtitle {
-      color: #64748b;
+      color: var(--text-light);
       font-size: 14px;
+      font-weight: 400;
     }
+    
     .compass-container {
-      width: 280px;
-      height: 280px;
+      width: 300px;
+      height: 300px;
       position: relative;
       margin: 15px 0;
+      filter: drop-shadow(0 8px 24px rgba(59, 130, 246, 0.15));
     }
+    
     .compass-face {
       width: 100%;
       height: 100%;
       border-radius: 50%;
       background-color: var(--card);
       box-shadow: var(--shadow);
-      border: 8px solid var(--primary);
+      border: 10px solid var(--primary);
       position: relative;
       overflow: hidden;
+      transition: all 0.3s ease;
     }
+    
     .compass-rose {
       width: 100%;
       height: 100%;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="%232563eb" stroke-width="1"/><path d="M50 5v10M95 50h-10M50 95v-10M5 50h10" stroke="%232563eb" stroke-width="1.5"/><path d="M70 15l-5 5M85 30l-5 5M85 70l-5-5M70 85l-5-5M30 85l5-5M15 70l5-5M15 30l5 5M30 15l5 5" stroke="%232563eb" stroke-width="1"/><text x="50" y="20" text-anchor="middle" font-size="10" fill="%23dc2626" font-weight="bold">N</text><text x="80" y="53" text-anchor="middle" font-size="9" fill="%232563eb">E</text><text x="50" y="85" text-anchor="middle" font-size="9" fill="%232563eb">S</text><text x="20" y="53" text-anchor="middle" font-size="9" fill="%232563eb">W</text><text x="70" y="30" text-anchor="middle" font-size="8" fill="%232563eb">NE</text><text x="70" y="75" text-anchor="middle" font-size="8" fill="%232563eb">SE</text><text x="30" y="75" text-anchor="middle" font-size="8" fill="%232563eb">SW</text><text x="30" y="30" text-anchor="middle" font-size="8" fill="%232563eb">NW</text></svg>');
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="%233b82f6" stroke-width="1" opacity="0.8"/><path d="M50 5v12M95 50h-12M50 95v-12M5 50h12" stroke="%233b82f6" stroke-width="1.5"/><path d="M70 15l-7 7M85 30l-7 7M85 70l-7-7M70 85l-7-7M30 85l7-7M15 70l7-7M15 30l7 7M30 15l7 7" stroke="%233b82f6" stroke-width="1.2"/><text x="50" y="22" text-anchor="middle" font-size="12" fill="%23ef4444" font-weight="bold">N</text><text x="78" y="53" text-anchor="middle" font-size="10" fill="%233b82f6">E</text><text x="50" y="83" text-anchor="middle" font-size="10" fill="%233b82f6">S</text><text x="22" y="53" text-anchor="middle" font-size="10" fill="%233b82f6">W</text><text x="70" y="30" text-anchor="middle" font-size="9" fill="%233b82f6">NE</text><text x="70" y="75" text-anchor="middle" font-size="9" fill="%233b82f6">SE</text><text x="30" y="75" text-anchor="middle" font-size="9" fill="%233b82f6">SW</text><text x="30" y="30" text-anchor="middle" font-size="9" fill="%233b82f6">NW</text></svg>');
       background-size: contain;
       position: absolute;
       top: 0;
       left: 0;
       transition: transform 0.2s ease-out;
     }
+    
     .compass-center {
       position: absolute;
-      width: 16px;
-      height: 16px;
-      background-color: var(--primary);
+      width: 20px;
+      height: 20px;
+      background: var(--gradient);
       border-radius: 50%;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 3;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
     }
+    
+    .compass-needle {
+      position: absolute;
+      width: 4px;
+      height: 100px;
+      background-color: var(--secondary);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(0deg);
+      transform-origin: 50% 0;
+      z-index: 2;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .compass-needle:after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 12px solid var(--secondary);
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
     .info-panel {
       background-color: var(--card);
-      border-radius: 12px;
-      padding: 15px;
+      border-radius: 16px;
+      padding: 20px;
       width: 100%;
       box-shadow: var(--shadow);
+      transition: all 0.3s ease;
     }
+    
+    .info-panel:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .panel-title {
+      font-size: 16px;
+      color: var(--text-light);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
     .direction {
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--primary);
-      margin: 8px 0;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin: 10px 0;
+      text-transform: capitalize;
     }
+    
     .details {
       display: flex;
       justify-content: space-between;
-      margin-top: 10px;
+      margin-top: 15px;
     }
+    
     .detail-box {
       flex: 1;
-      padding: 8px;
+      padding: 10px;
+      background-color: var(--card-dark);
+      border-radius: 12px;
+      margin: 0 5px;
     }
+    
     .detail-value {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--primary);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 4px;
     }
+    
     .detail-label {
       font-size: 12px;
-      color: #64748b;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
+    
     .message {
-      padding: 12px;
-      border-radius: 8px;
+      padding: 14px;
+      border-radius: 12px;
       margin-top: 15px;
       font-size: 14px;
       display: none;
+      text-align: left;
     }
+    
     .error {
       background-color: #fee2e2;
       color: #dc2626;
+      border-left: 4px solid #dc2626;
     }
+    
     .instruction {
       background-color: #dbeafe;
       color: #1d4ed8;
+      border-left: 4px solid #1d4ed8;
     }
+    
     .permission-btn {
-      background-color: var(--primary);
+      background: var(--gradient);
       color: white;
       border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
+      padding: 14px 24px;
+      border-radius: 12px;
       font-size: 16px;
+      font-weight: 600;
       margin-top: 15px;
       cursor: pointer;
       display: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
     }
+    
+    .permission-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    .feature-box {
+      display: flex;
+      width: 100%;
+      gap: 15px;
+    }
+    
+    .feature {
+      flex: 1;
+      background-color: var(--card);
+      border-radius: 16px;
+      padding: 15px;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+    }
+    
+    .feature:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+      font-size: 24px;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    
+    .feature-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+    
+    .feature-desc {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    
+    .input-group {
+      display: flex;
+      margin-bottom: 15px;
+    }
+    
+    .input-group input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px 0 0 12px;
+      border: 1px solid #e2e8f0;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    
+    .input-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    
+    .input-group button {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 0 12px 12px 0;
+      background: var(--gradient);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .input-group button:hover {
+      opacity: 0.9;
+    }
+    
+    .weather-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .weather-icon {
+      font-size: 24px;
+      color: var(--primary);
+    }
+    
+    .attribution {
+      font-size: 12px;
+      color: var(--text-light);
+      margin-top: 20px;
+    }
+    
     @media (max-width: 400px) {
       .compass-container {
-        width: 250px;
-        height: 250px;
+        width: 280px;
+        height: 280px;
       }
+      
+      .feature-box {
+        flex-direction: column;
+      }
+    }
+    
+    /* Animation for calibration */
+    @keyframes shake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(5deg); }
+      75% { transform: rotate(-5deg); }
+    }
+    
+    .calibrating {
+      animation: shake 0.5s infinite;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Digital Compass</h1>
-      <p class="subtitle">Find your direction easily</p>
+      <h1><i class="fas fa-compass"></i> Smart Compass</h1>
+      <p class="subtitle">Your modern digital navigation tool</p>
     </header>
 
     <div class="compass-container">
       <div class="compass-face">
         <div class="compass-rose" id="compassRose"></div>
+        <div class="compass-needle" id="compassNeedle"></div>
         <div class="compass-center"></div>
       </div>
     </div>
 
     <div class="info-panel">
-      <div>You are facing:</div>
+      <div class="panel-title">
+        <i class="fas fa-location-arrow"></i> You are facing:
+      </div>
       <div class="direction" id="direction">--</div>
       <div class="details">
         <div class="detail-box">
           <div class="detail-value" id="degrees">0°</div>
-          <div class="detail-label">Angle</div>
+          <div class="detail-label">Heading</div>
         </div>
         <div class="detail-box">
           <div class="detail-value" id="accuracy">--°</div>
           <div class="detail-label">Accuracy</div>
         </div>
+        <div class="detail-box">
+          <div class="detail-value" id="altitude">--</div>
+          <div class="detail-label">Altitude</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-box">
+      <div class="feature">
+        <div class="feature-icon">
+          <i class="fas fa-sun"></i>
+        </div>
+        <div class="feature-title">Sun Position</div>
+        <div class="feature-desc" id="sunPosition">Calculating...</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <i class="fas fa-map-marker-alt"></i>
+        </div>
+        <div class="feature-title">Coordinates</div>
+        <div class="feature-desc" id="coordinates">--</div>
       </div>
     </div>
 
     <div class="message instruction" id="instructions">
-      <strong>Calibration needed:</strong> Move your device in a figure-8 motion
+      <strong><i class="fas fa-info-circle"></i> Calibration needed:</strong> Move your device in a figure-8 motion for accurate readings
     </div>
 
-    <button class="permission-btn" id="permissionBtn">Enable Compass</button>
+    <button class="permission-btn" id="permissionBtn">
+      <i class="fas fa-compass"></i> Enable Compass
+    </button>
     <div class="message error" id="error">
-      Compass not available. Please use a mobile device with orientation sensors.
+      <strong><i class="fas fa-exclamation-triangle"></i> Compass not available:</strong> Please use a mobile device with orientation sensors
     </div>
 
     <div class="info-panel">
-      <div style="margin-bottom: 10px;">
-        <input type="date" id="dob" style="padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" />
-        <button onclick="calculateAge()" style="padding: 8px 12px; margin-left: 8px; border: none; border-radius: 6px; background-color: var(--primary); color: white;">Get Age</button>
+      <div class="panel-title">
+        <i class="fas fa-birthday-cake"></i> Age Calculator
+      </div>
+      <div class="input-group">
+        <input type="date" id="dob" placeholder="Your birth date" />
+        <button onclick="calculateAge()">
+          <i class="fas fa-calculator"></i>
+        </button>
       </div>
       <div class="detail-value" id="ageResult">Your age: --</div>
     </div>
 
     <div class="info-panel" id="weatherPanel">
-      <div class="detail-value">Weather: <span id="weatherInfo">--</span></div>
+      <div class="panel-title">
+        <i class="fas fa-cloud-sun"></i> Local Weather
+      </div>
+      <div class="weather-info">
+        <div class="weather-icon" id="weatherIcon">
+          <i class="fas fa-question"></i>
+        </div>
+        <div class="detail-value">
+          <span id="weatherInfo">Loading weather...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="attribution">
+      <i class="fas fa-code"></i> with <i class="fas fa-heart" style="color: var(--secondary);"></i> by Smart Compass
     </div>
   </div>
 
   <script>
     const compassRose = document.getElementById('compassRose');
+    const compassNeedle = document.getElementById('compassNeedle');
     const directionEl = document.getElementById('direction');
     const degreesEl = document.getElementById('degrees');
     const accuracyEl = document.getElementById('accuracy');
+    const altitudeEl = document.getElementById('altitude');
+    const coordinatesEl = document.getElementById('coordinates');
+    const sunPositionEl = document.getElementById('sunPosition');
     const instructionsEl = document.getElementById('instructions');
     const errorEl = document.getElementById('error');
     const permissionBtn = document.getElementById('permissionBtn');
+    const weatherIcon = document.getElementById('weatherIcon');
 
     const directions = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
+    let lastHeading = 0;
+    let calibrationCount = 0;
+    let isCalibrating = false;
 
     function getDirection(heading) {
       const index = Math.round(((360 - heading) % 360) / 45) % 8;
@@ -216,23 +479,88 @@
     }
 
     function updateCompass(heading, accuracy) {
-      // Rotate the compass rose in the opposite direction to compensate for device rotation
-      compassRose.style.transform = `rotate(${-heading}deg)`;
-      degreesEl.textContent = `${Math.round(heading)}°`;
-      directionEl.textContent = getDirection(heading);
-      if (accuracy) accuracyEl.textContent = `±${Math.round(accuracy)}°`;
+      // Smooth the heading change for better UX
+      const smoothedHeading = lastHeading + (heading - lastHeading) * 0.3;
+      lastHeading = smoothedHeading;
+      
+      // Rotate the compass elements
+      compassRose.style.transform = `rotate(${-smoothedHeading}deg)`;
+      compassNeedle.style.transform = `translate(-50%, -50%) rotate(${smoothedHeading}deg)`;
+      
+      // Update display values
+      degreesEl.textContent = `${Math.round(smoothedHeading)}°`;
+      directionEl.textContent = getDirection(smoothedHeading);
+      
+      if (accuracy) {
+        accuracyEl.textContent = `±${Math.round(accuracy)}°`;
+        // Show calibration instructions if accuracy is poor
+        if (accuracy > 20 && !isCalibrating) {
+          instructionsEl.style.display = 'block';
+          isCalibrating = true;
+          document.querySelector('.compass-face').classList.add('calibrating');
+        } else if (accuracy <= 20 && isCalibrating) {
+          instructionsEl.style.display = 'none';
+          isCalibrating = false;
+          document.querySelector('.compass-face').classList.remove('calibrating');
+        }
+      }
+    }
+
+    function updatePosition(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const alt = position.coords.altitude;
+      
+      // Update coordinates display
+      coordinatesEl.textContent = `${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E`;
+      
+      // Update altitude if available
+      if (alt) {
+        altitudeEl.textContent = `${Math.round(alt)}m`;
+      }
+      
+      // Calculate sun position
+      updateSunPosition(lat, lon);
+    }
+
+    function updateSunPosition(lat, lon) {
+      const now = new Date();
+      const hours = now.getHours() + now.getMinutes() / 60;
+      
+      // Simplified sun position calculation
+      const isDay = hours > 6 && hours < 18;
+      const sunDirection = isDay ? 'East to West' : 'Below horizon';
+      const sunElevation = isDay ? 
+        `${Math.round((1 - Math.abs(12 - hours)/6) * 90)}° high` : 
+        'Not visible';
+      
+      sunPositionEl.textContent = `${sunDirection}, ${sunElevation}`;
     }
 
     function initCompass() {
       if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        // iOS 13+ devices
         permissionBtn.style.display = 'block';
         permissionBtn.addEventListener('click', requestPermission);
         return;
       }
+      
       if (!window.DeviceOrientationEvent) {
         showError();
         return;
       }
+      
+      // Check for geolocation support
+      if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(updatePosition, () => {
+          coordinatesEl.textContent = 'Location blocked';
+        }, {
+          enableHighAccuracy: true,
+          maximumAge: 30000,
+          timeout: 27000
+        });
+      }
+      
       startCompass();
     }
 
@@ -242,8 +570,13 @@
           if (response === 'granted') {
             permissionBtn.style.display = 'none';
             startCompass();
+            
+            // Also request geolocation permission
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(updatePosition);
+            }
           } else {
-            showError('Permission denied. Please enable device orientation.');
+            showError('Permission denied. Please enable device orientation in settings.');
           }
         })
         .catch(showError);
@@ -251,12 +584,18 @@
 
     function startCompass() {
       errorEl.style.display = 'none';
+      
       if ('webkitCompassHeading' in window) {
+        // iOS devices
         window.addEventListener('deviceorientation', handleIOSCompass);
         return;
       }
+      
+      // Standard devices
       window.addEventListener('deviceorientation', handleStandardCompass);
       instructionsEl.style.display = 'block';
+      isCalibrating = true;
+      document.querySelector('.compass-face').classList.add('calibrating');
     }
 
     function handleIOSCompass(event) {
@@ -267,7 +606,7 @@
 
     function handleStandardCompass(event) {
       if (event.alpha !== null) {
-        let heading = event.alpha; // alpha is compass heading (0-360)
+        let heading = event.alpha;
         
         // Adjust for device orientation
         if (typeof window.orientation !== 'undefined') {
@@ -280,6 +619,16 @@
         // Ensure heading is between 0-360
         if (heading < 0) heading += 360;
         
+        // Count calibration movements
+        if (Math.abs(heading - lastHeading) > 30) {
+          calibrationCount++;
+          if (calibrationCount > 5 && isCalibrating) {
+            instructionsEl.style.display = 'none';
+            isCalibrating = false;
+            document.querySelector('.compass-face').classList.remove('calibrating');
+          }
+        }
+        
         updateCompass(heading, event.webkitCompassAccuracy);
       }
     }
@@ -287,6 +636,8 @@
     function showError(message) {
       errorEl.style.display = 'block';
       if (message) errorEl.textContent = message;
+      
+      // Demo mode for desktop
       if (window.innerWidth > 768) {
         let angle = 0;
         setInterval(() => {
@@ -326,8 +677,28 @@
       const seconds = Math.floor(diff / 1000) % 60;
       const minutes = Math.floor(diff / 60000) % 60;
       const hours = Math.floor(diff / 3600000) % 24;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-      resultEl.textContent = `Your age: ${ageYear}y ${ageMonth}m ${ageDay}d ${hours}h ${minutes}m ${seconds}s`;
+      resultEl.textContent = `Age: ${ageYear}y ${ageMonth}m ${ageDay}d (${days} total days)`;
+    }
+
+    function getWeatherIcon(condition) {
+      const iconMap = {
+        'clear': 'fa-sun',
+        'cloud': 'fa-cloud',
+        'rain': 'fa-cloud-rain',
+        'thunderstorm': 'fa-bolt',
+        'snow': 'fa-snowflake',
+        'mist': 'fa-smog'
+      };
+      
+      condition = condition.toLowerCase();
+      for (const [key, icon] of Object.entries(iconMap)) {
+        if (condition.includes(key)) {
+          return icon;
+        }
+      }
+      return 'fa-cloud';
     }
 
     function fetchWeather() {
@@ -339,27 +710,34 @@
       navigator.geolocation.getCurrentPosition(position => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
-        const apiKey = 'bd37352e57e5f7031530f1f2749a915d'; // Replace with your OpenWeatherMap API key
+        const apiKey = 'bd37352e57e5f7031530f1f2749a915d';
 
         fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`)
           .then(res => res.json())
           .then(data => {
-            const temp = data.main.temp;
+            const temp = Math.round(data.main.temp);
             const condition = data.weather[0].description;
             const city = data.name;
+            const icon = getWeatherIcon(condition);
+            
+            weatherIcon.innerHTML = `<i class="fas ${icon}"></i>`;
             document.getElementById("weatherInfo").textContent = `${city}: ${temp}°C, ${condition}`;
           })
           .catch(err => {
-            document.getElementById("weatherInfo").textContent = "Weather fetch failed.";
+            document.getElementById("weatherInfo").textContent = "Weather data unavailable";
           });
       }, () => {
-        document.getElementById("weatherInfo").textContent = "Location access denied.";
+        document.getElementById("weatherInfo").textContent = "Location access denied";
       });
     }
 
+    // Initialize everything when page loads
     window.addEventListener('load', () => {
       initCompass();
       fetchWeather();
+      
+      // Set maximum date for age calculator to today
+      document.getElementById("dob").max = new Date().toISOString().split("T")[0];
     });
   </script>
 </body>
