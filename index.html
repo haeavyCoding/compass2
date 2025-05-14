@@ -115,6 +115,33 @@
       box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
     }
     
+    .compass-needle {
+      position: absolute;
+      width: 4px;
+      height: 100px;
+      background-color: var(--secondary);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(0deg);
+      transform-origin: 50% 0;
+      z-index: 2;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .compass-needle:after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 12px solid var(--secondary);
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
     .info-panel {
       background-color: var(--card);
       border-radius: 16px;
@@ -357,6 +384,7 @@
     <div class="compass-container">
       <div class="compass-face">
         <div class="compass-rose" id="compassRose"></div>
+        <div class="compass-needle" id="compassNeedle"></div>
         <div class="compass-center"></div>
       </div>
     </div>
@@ -447,6 +475,7 @@
 
   <script>
     const compassRose = document.getElementById('compassRose');
+    const compassNeedle = document.getElementById('compassNeedle');
     const directionEl = document.getElementById('direction');
     const degreesEl = document.getElementById('degrees');
     const accuracyEl = document.getElementById('accuracy');
@@ -521,8 +550,9 @@
       // Normalize to 0-360 range
       const normalizedHeading = (smoothedHeading + 360) % 360;
       
-      // Rotate the compass rose
+      // Rotate the compass elements
       compassRose.style.transform = `rotate(${-normalizedHeading}deg)`;
+      compassNeedle.style.transform = `translate(-50%, -50%) rotate(${normalizedHeading}deg)`;
       
       // Update display values
       degreesEl.textContent = `${Math.round(normalizedHeading)}°`;
@@ -564,7 +594,7 @@
       // Map accuracy to progress (0-100%)
       const maxAccuracy = 45; // Consider anything above this as 0% progress
       const minAccuracy = 10; // Consider anything below this as 100% progress
-      let progress = 100 - ((Math.min(avgAccuracy, maxAccuracy) - minAccuracy) / (maxAccuracy - minAccuracy) * 100);
+      let progress = 100 - (Math.min(avgAccuracy, maxAccuracy) - minAccuracy) / (maxAccuracy - minAccuracy) * 100;
       progress = Math.max(0, Math.min(100, progress));
       
       calibrationProgressBar.style.width = `${progress}%`;
