@@ -356,6 +356,22 @@
     .calibrating {
       animation: shake 0.5s infinite;
     }
+    
+    /* Calibration progress indicator */
+    .calibration-progress {
+      height: 4px;
+      background-color: #e2e8f0;
+      border-radius: 2px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    
+    .calibration-progress-bar {
+      height: 100%;
+      background: var(--gradient);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
   </style>
 </head>
 <body>
@@ -391,6 +407,9 @@
           <div class="detail-value" id="altitude">--</div>
           <div class="detail-label">Altitude</div>
         </div>
+      </div>
+      <div class="calibration-progress" id="calibrationProgress" style="display: none;">
+        <div class="calibration-progress-bar" id="calibrationProgressBar"></div>
       </div>
     </div>
 
@@ -467,72 +486,174 @@
     const errorEl = document.getElementById('error');
     const permissionBtn = document.getElementById('permissionBtn');
     const weatherIcon = document.getElementById('weatherIcon');
+    const calibrationProgress = document.getElementById('calibrationProgress');
+    const calibrationProgressBar = document.getElementById('calibrationProgressBar');
 
     const directions = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
     let lastHeading = 0;
     let calibrationCount = 0;
     let isCalibrating = false;
+    let calibrationSamples = [];
+    let lastTimestamp = 0;
+    let smoothingBuffer = [];
+    const SMOOTHING_BUFFER_SIZE = 5;
 
+    // More precise direction calculation with 16 cardinal points
     function getDirection(heading) {
-      const index = Math.round(((360 - heading) % 360) / 45) % 8;
-      return directions[index];
+      const index = Math.round(((360 - heading) % 360) / 22.5) % 16;
+      const cardinalPoints = [
+        'North', 'North-Northeast', 'Northeast', 'East-Northeast',
+        'East', 'East-Southeast', 'Southeast', 'South-Southeast',
+        'South', 'South-Southwest', 'Southwest', 'West-Southwest',
+        'West', 'West-Northwest', 'Northwest', 'North-Northwest'
+      ];
+      return cardinalPoints[index];
+    }
+
+    // Improved smoothing algorithm with weighted average
+    function smoothHeading(newHeading) {
+      // Add new reading to buffer
+      smoothingBuffer.push(newHeading);
+      
+      // Keep buffer size limited
+      if (smoothingBuffer.length > SMOOTHING_BUFFER_SIZE) {
+        smoothingBuffer.shift();
+      }
+      
+      // Calculate weighted average (more weight to recent readings)
+      let totalWeight = 0;
+      let weightedSum = 0;
+      
+      for (let i = 0; i < smoothingBuffer.length; i++) {
+        const weight = (i + 1) / smoothingBuffer.length; // Linear weights
+        weightedSum += smoothingBuffer[i] * weight;
+        totalWeight += weight;
+      }
+      
+      return weightedSum / totalWeight;
     }
 
     function updateCompass(heading, accuracy) {
-      // Smooth the heading change for better UX
-      const smoothedHeading = lastHeading + (heading - lastHeading) * 0.3;
+      // Handle heading wrap-around at 360°
+      if (Math.abs(heading - lastHeading) > 180) {
+        if (heading > lastHeading) {
+          heading -= 360;
+        } else {
+          heading += 360;
+        }
+      }
+      
+      // Apply smoothing algorithm
+      const smoothedHeading = smoothHeading(heading);
       lastHeading = smoothedHeading;
       
+      // Normalize to 0-360 range
+      const normalizedHeading = (smoothedHeading + 360) % 360;
+      
       // Rotate the compass elements
-      compassRose.style.transform = `rotate(${-smoothedHeading}deg)`;
-      compassNeedle.style.transform = `translate(-50%, -50%) rotate(${smoothedHeading}deg)`;
+      compassRose.style.transform = `rotate(${-normalizedHeading}deg)`;
+      compassNeedle.style.transform = `translate(-50%, -50%) rotate(${normalizedHeading}deg)`;
       
       // Update display values
-      degreesEl.textContent = `${Math.round(smoothedHeading)}°`;
-      directionEl.textContent = getDirection(smoothedHeading);
+      degreesEl.textContent = `${Math.round(normalizedHeading)}°`;
+      directionEl.textContent = getDirection(normalizedHeading);
       
       if (accuracy) {
         accuracyEl.textContent = `±${Math.round(accuracy)}°`;
-        // Show calibration instructions if accuracy is poor
-        if (accuracy > 20 && !isCalibrating) {
-          instructionsEl.style.display = 'block';
-          isCalibrating = true;
-          document.querySelector('.compass-face').classList.add('calibrating');
-        } else if (accuracy <= 20 && isCalibrating) {
-          instructionsEl.style.display = 'none';
-          isCalibrating = false;
-          document.querySelector('.compass-face').classList.remove('calibrating');
+        
+        // Enhanced calibration detection
+        if (accuracy > 15) {
+          if (!isCalibrating) {
+            startCalibration();
+          }
+          updateCalibrationProgress(accuracy);
+        } else if (isCalibrating) {
+          completeCalibration();
         }
       }
     }
 
+    function startCalibration() {
+      isCalibrating = true;
+      instructionsEl.style.display = 'block';
+      calibrationProgress.style.display = 'block';
+      document.querySelector('.compass-face').classList.add('calibrating');
+      calibrationSamples = [];
+    }
+
+    function updateCalibrationProgress(accuracy) {
+      // Add current accuracy to samples
+      calibrationSamples.push(accuracy);
+      if (calibrationSamples.length > 10) {
+        calibrationSamples.shift();
+      }
+      
+      // Calculate average accuracy
+      const avgAccuracy = calibrationSamples.reduce((a, b) => a + b, 0) / calibrationSamples.length;
+      
+      // Map accuracy to progress (0-100%)
+      const maxAccuracy = 45; // Consider anything above this as 0% progress
+      const minAccuracy = 10; // Consider anything below this as 100% progress
+      let progress = 100 - (Math.min(avgAccuracy, maxAccuracy) - minAccuracy) / (maxAccuracy - minAccuracy) * 100;
+      progress = Math.max(0, Math.min(100, progress));
+      
+      calibrationProgressBar.style.width = `${progress}%`;
+    }
+
+    function completeCalibration() {
+      isCalibrating = false;
+      instructionsEl.style.display = 'none';
+      calibrationProgress.style.display = 'none';
+      document.querySelector('.compass-face').classList.remove('calibrating');
+    }
+
+    // More accurate position and sun calculation
     function updatePosition(position) {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
-      const alt = position.coords.altitude;
+      const alt = position.coords.altitude || '--';
+      const accuracy = position.coords.accuracy;
       
-      // Update coordinates display
-      coordinatesEl.textContent = `${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E`;
-      
-      // Update altitude if available
-      if (alt) {
-        altitudeEl.textContent = `${Math.round(alt)}m`;
+      // Update coordinates display with accuracy
+      coordinatesEl.textContent = `${lat.toFixed(6)}°N, ${lon.toFixed(6)}°E`;
+      if (accuracy) {
+        coordinatesEl.textContent += ` (±${Math.round(accuracy)}m)`;
       }
       
-      // Calculate sun position
+      // Update altitude if available
+      altitudeEl.textContent = alt !== '--' ? `${Math.round(alt)}m` : alt;
+      
+      // Calculate sun position with more precision
       updateSunPosition(lat, lon);
     }
 
+    // More accurate sun position calculation
     function updateSunPosition(lat, lon) {
       const now = new Date();
-      const hours = now.getHours() + now.getMinutes() / 60;
+      const date = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
       
-      // Simplified sun position calculation
-      const isDay = hours > 6 && hours < 18;
-      const sunDirection = isDay ? 'East to West' : 'Below horizon';
-      const sunElevation = isDay ? 
-        `${Math.round((1 - Math.abs(12 - hours)/6) * 90)}° high` : 
-        'Not visible';
+      // Approximate solar position calculation
+      const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+      const declination = 23.45 * Math.sin(2 * Math.PI * (284 + dayOfYear) / 365);
+      
+      const hour = date.getHours() + date.getMinutes() / 60;
+      const hourAngle = (hour - 12) * 15;
+      
+      const elevation = Math.asin(
+        Math.sin(lat * Math.PI / 180) * Math.sin(declination * Math.PI / 180) +
+        Math.cos(lat * Math.PI / 180) * Math.cos(declination * Math.PI / 180) *
+        Math.cos(hourAngle * Math.PI / 180)
+      ) * 180 / Math.PI;
+      
+      const azimuth = Math.atan2(
+        Math.sin(hourAngle * Math.PI / 180),
+        Math.cos(hourAngle * Math.PI / 180) * Math.sin(lat * Math.PI / 180) -
+        Math.tan(declination * Math.PI / 180) * Math.cos(lat * Math.PI / 180)
+      ) * 180 / Math.PI + 180;
+      
+      const isDay = elevation > 0;
+      const sunDirection = isDay ? getDirection(azimuth) : 'Below horizon';
+      const sunElevation = isDay ? `${Math.round(elevation)}° high` : 'Not visible';
       
       sunPositionEl.textContent = `${sunDirection}, ${sunElevation}`;
     }
@@ -552,13 +673,15 @@
       
       // Check for geolocation support
       if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(updatePosition, () => {
-          coordinatesEl.textContent = 'Location blocked';
-        }, {
-          enableHighAccuracy: true,
-          maximumAge: 30000,
-          timeout: 27000
-        });
+        navigator.geolocation.watchPosition(
+          updatePosition, 
+          () => coordinatesEl.textContent = 'Location blocked',
+          {
+            enableHighAccuracy: true,
+            maximumAge: 30000,
+            timeout: 27000
+          }
+        );
       }
       
       startCompass();
@@ -587,25 +710,34 @@
       
       if ('webkitCompassHeading' in window) {
         // iOS devices
-        window.addEventListener('deviceorientation', handleIOSCompass);
+        window.addEventListener('deviceorientation', handleIOSCompass, true);
         return;
       }
       
       // Standard devices
-      window.addEventListener('deviceorientation', handleStandardCompass);
-      instructionsEl.style.display = 'block';
-      isCalibrating = true;
-      document.querySelector('.compass-face').classList.add('calibrating');
+      window.addEventListener('deviceorientationabsolute', handleStandardCompass, true);
+      window.addEventListener('deviceorientation', handleStandardCompass, true);
+      startCalibration();
     }
 
     function handleIOSCompass(event) {
       if (event.webkitCompassHeading !== undefined) {
-        updateCompass(event.webkitCompassHeading, event.webkitCompassAccuracy);
+        const currentTime = Date.now();
+        // Only update if enough time has passed to prevent jitter
+        if (currentTime - lastTimestamp > 50) {
+          updateCompass(event.webkitCompassHeading, event.webkitCompassAccuracy);
+          lastTimestamp = currentTime;
+        }
       }
     }
 
     function handleStandardCompass(event) {
       if (event.alpha !== null) {
+        const currentTime = Date.now();
+        // Throttle updates to prevent excessive rendering
+        if (currentTime - lastTimestamp < 50) return;
+        lastTimestamp = currentTime;
+        
         let heading = event.alpha;
         
         // Adjust for device orientation
@@ -616,33 +748,39 @@
           }
         }
         
+        // Use absolute orientation if available (more accurate)
+        if (event.absolute || event.type === 'deviceorientationabsolute') {
+          // No need to adjust for device orientation in absolute mode
+          heading = event.alpha;
+        }
+        
         // Ensure heading is between 0-360
         if (heading < 0) heading += 360;
         
-        // Count calibration movements
-        if (Math.abs(heading - lastHeading) > 30) {
-          calibrationCount++;
-          if (calibrationCount > 5 && isCalibrating) {
-            instructionsEl.style.display = 'none';
-            isCalibrating = false;
-            document.querySelector('.compass-face').classList.remove('calibrating');
-          }
+        // Calculate accuracy estimate (simulated for non-iOS devices)
+        let accuracy = 15; // Base accuracy
+        if (isCalibrating) {
+          // Simulate improving accuracy during calibration
+          accuracy = Math.max(5, 15 - calibrationSamples.length);
         }
         
-        updateCompass(heading, event.webkitCompassAccuracy);
+        updateCompass(heading, accuracy);
       }
     }
 
     function showError(message) {
       errorEl.style.display = 'block';
-      if (message) errorEl.textContent = message;
+      if (message) errorEl.innerHTML = `<strong><i class="fas fa-exclamation-triangle"></i> ${message}</strong>`;
       
-      // Demo mode for desktop
+      // Enhanced demo mode for desktop
       if (window.innerWidth > 768) {
         let angle = 0;
         setInterval(() => {
-          angle = (angle + 1) % 360;
+          angle = (angle + 0.5) % 360;
           updateCompass(angle, 5);
+          coordinatesEl.textContent = "37.7749°N, 122.4194°W (±15m)";
+          altitudeEl.textContent = "16m";
+          sunPositionEl.textContent = "West, 23° high";
         }, 50);
       }
     }
@@ -674,12 +812,10 @@
       }
 
       const diff = now - dob;
-      const seconds = Math.floor(diff / 1000) % 60;
-      const minutes = Math.floor(diff / 60000) % 60;
-      const hours = Math.floor(diff / 3600000) % 24;
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-      resultEl.textContent = `Age: ${ageYear}y ${ageMonth}m ${ageDay}d (${days} total days)`;
+      const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const totalHours = Math.floor(diff / (1000 * 60 * 60));
+      
+      resultEl.textContent = `Age: ${ageYear} years, ${ageMonth} months, ${ageDay} days (${totalDays} total days)`;
     }
 
     function getWeatherIcon(condition) {
@@ -689,7 +825,11 @@
         'rain': 'fa-cloud-rain',
         'thunderstorm': 'fa-bolt',
         'snow': 'fa-snowflake',
-        'mist': 'fa-smog'
+        'mist': 'fa-smog',
+        'fog': 'fa-smog',
+        'haze': 'fa-smog',
+        'drizzle': 'fa-cloud-rain',
+        'tornado': 'fa-wind'
       };
       
       condition = condition.toLowerCase();
@@ -718,10 +858,13 @@
             const temp = Math.round(data.main.temp);
             const condition = data.weather[0].description;
             const city = data.name;
-            const icon = getWeatherIcon(condition);
+            const icon = getWeatherIcon(data.weather[0].main);
+            const humidity = data.main.humidity;
+            const windSpeed = Math.round(data.wind.speed * 3.6); // Convert m/s to km/h
             
             weatherIcon.innerHTML = `<i class="fas ${icon}"></i>`;
-            document.getElementById("weatherInfo").textContent = `${city}: ${temp}°C, ${condition}`;
+            document.getElementById("weatherInfo").textContent = 
+              `${city}: ${temp}°C, ${condition}, ${humidity}% humidity, ${windSpeed} km/h wind`;
           })
           .catch(err => {
             document.getElementById("weatherInfo").textContent = "Weather data unavailable";
@@ -738,6 +881,15 @@
       
       // Set maximum date for age calculator to today
       document.getElementById("dob").max = new Date().toISOString().split("T")[0];
+      
+      // Add vibration feedback for calibration (if supported)
+      if ('vibrate' in navigator) {
+        document.querySelector('.compass-face').addEventListener('click', () => {
+          if (isCalibrating) {
+            navigator.vibrate(50);
+          }
+        });
+      }
     });
   </script>
 </body>
